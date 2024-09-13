@@ -23,6 +23,7 @@ const MapPage = () => {
     satellite: new TileLayer({
       source: new XYZ({
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        crossOrigin: 'anonymous',
       }),
     }),
     urban3d: new TileLayer({
@@ -58,9 +59,10 @@ const MapPage = () => {
       const wmsLayer = new ImageLayer({
         source: new ImageWMS({
           url: 'http://18.116.82.248:8080/geoserver/cmufam/wms',
-          params: { 'LAYERS': layer },
+          params: { 'LAYERS': layer, 'TILED': true },
           ratio: 1,
           serverType: 'geoserver',
+          crossOrigin: 'anonymous',
         }),
         visible: false,
       });
