@@ -1,4 +1,4 @@
-import { HomeIcon, MapIcon, AlertTriangle, Map, Tree } from "lucide-react";
+import { HomeIcon, MapIcon, AlertTriangle, Map, Leaf } from "lucide-react";
 import Index from "./pages/Index.jsx";
 import MapPage from "./pages/MapPage.jsx";
 import ReportCrimePage from "./pages/ReportCrimePage.jsx";
@@ -33,7 +33,7 @@ export const navItems = [
   {
     title: "Árvores AHPICE",
     to: "/trees",
-    icon: <Tree className="h-4 w-4" />,
+    icon: <Leaf className="h-4 w-4" />,
     page: <TreesPage />,
   },
 ];
