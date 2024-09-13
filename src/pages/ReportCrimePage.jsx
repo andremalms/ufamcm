@@ -55,6 +55,7 @@ const ReportCrimePage = () => {
       element: popupRef.current,
       positioning: 'bottom-center',
       stopEvent: false,
+      offset: [0, -10],
     });
     initialMap.addOverlay(popup);
 
@@ -98,7 +99,7 @@ const ReportCrimePage = () => {
         <h1 className="text-2xl font-bold mb-4">Informar Ocorrências</h1>
       </div>
       <div ref={mapRef} className="flex-grow relative">
-        <div ref={popupRef} className="absolute bg-white p-4 rounded shadow-md" style={{ display: 'none' }}>
+        <div ref={popupRef} className="absolute bg-white p-4 rounded shadow-md max-w-sm" style={{ display: 'none', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="crimeType" className="block text-sm font-medium text-gray-700">Tipo de Crime</label>
@@ -143,9 +144,14 @@ const ReportCrimePage = () => {
                 rows="3"
               ></textarea>
             </div>
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-              Submeter
-            </button>
+            <div className="flex justify-between">
+              <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                Submeter
+              </button>
+              <button type="button" onClick={() => popupRef.current.style.display = 'none'} className="bg-gray-300 text-gray-700 p-2 rounded hover:bg-gray-400">
+                Cancelar
+              </button>
+            </div>
           </form>
         </div>
       </div>
