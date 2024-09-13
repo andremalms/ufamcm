@@ -16,6 +16,7 @@ import { Resizable } from 're-resizable';
 const ReportCrimePage = () => {
   const mapRef = useRef();
   const popupRef = useRef();
+  const tooltipRef = useRef();
   const [map, setMap] = useState(null);
   const [vectorSource, setVectorSource] = useState(null);
   const [crimeType, setCrimeType] = useState('');
@@ -62,12 +63,36 @@ const ReportCrimePage = () => {
 
     initialMap.addLayer(vectorLayer);
 
+    const tooltip = new Overlay({
+      element: tooltipRef.current,
+      offset: [10, 0],
+      positioning: 'bottom-left',
+    });
+    initialMap.addOverlay(tooltip);
+
     initialMap.on('click', (event) => {
       const clickedCoord = transform(event.coordinate, 'EPSG:3857', 'EPSG:4326');
       setClickedCoord(clickedCoord);
       const pixel = initialMap.getEventPixel(event.originalEvent);
       setPopupPosition({ left: pixel[0], top: pixel[1] });
       popupRef.current.style.display = 'block';
+      tooltip.setPosition(undefined);
+    });
+
+    initialMap.on('pointermove', (event) => {
+      const feature = initialMap.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+      if (feature) {
+        const properties = feature.getProperties();
+        tooltipRef.current.innerHTML = `
+          <strong>${properties.type}</strong><br>
+          Data: ${properties.date}<br>
+          Hora: ${properties.time}<br>
+          Observação: ${properties.observation}
+        `;
+        tooltip.setPosition(event.coordinate);
+      } else {
+        tooltip.setPosition(undefined);
+      }
     });
 
     setMap(initialMap);
@@ -81,12 +106,10 @@ const ReportCrimePage = () => {
     if (clickedCoord) {
       const feature = new Feature({
         geometry: new Point(fromLonLat(clickedCoord)),
-        properties: {
-          type: crimeType,
-          time: crimeTime,
-          date: crimeDate,
-          observation: crimeObservation,
-        },
+        type: crimeType,
+        time: crimeTime,
+        date: crimeDate,
+        observation: crimeObservation,
       });
       vectorSource.addFeature(feature);
       popupRef.current.style.display = 'none';
@@ -190,6 +213,7 @@ const ReportCrimePage = () => {
             </div>
           </Resizable>
         </div>
+        <div ref={tooltipRef} className="bg-white p-2 rounded shadow-md text-sm"></div>
       </div>
     </div>
   );
