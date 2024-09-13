@@ -2,11 +2,13 @@ import React from 'react';
 
 const StreetViewPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-4">Mapas de Rua</h1>
-        <p className="text-xl text-gray-600">Interface Mapillary/Mapbox será implementada aqui.</p>
-      </div>
+    <div className="h-screen w-full">
+      <iframe
+        src="http://18.116.82.248/cmufam/"
+        title="Mapas de Rua UFAM"
+        className="w-full h-full border-none"
+        allowFullScreen
+      />
     </div>
   );
 };
