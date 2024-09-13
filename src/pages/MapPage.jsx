@@ -23,8 +23,8 @@ const MapPage = () => {
     }),
     urban3d: new TileLayer({
       source: new XYZ({
-        url: 'https://tile.osmbuildings.org/0.2/sx-cj9q7q/{z}/{x}/{y}.png',
-        attributions: '© OSM Buildings',
+        url: 'https://tiles.osmbuildings.org/OSMBuildings/tiles/osmbuildings/{z}/{x}/{y}.png',
+        crossOrigin: 'anonymous',
         maxZoom: 19,
       }),
     }),
@@ -47,7 +47,14 @@ const MapPage = () => {
 
   const changeBasemap = (basemapKey) => {
     if (map) {
-      map.getLayers().setAt(0, basemaps[basemapKey]);
+      if (basemapKey === 'urban3d') {
+        map.getLayers().clear();
+        map.addLayer(basemaps.osm);
+        map.addLayer(basemaps.urban3d);
+      } else {
+        map.getLayers().clear();
+        map.addLayer(basemaps[basemapKey]);
+      }
       setCurrentBasemap(basemapKey);
     }
   };
@@ -73,7 +80,7 @@ const MapPage = () => {
             className={`px-4 py-2 rounded ${currentBasemap === 'urban3d' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => changeBasemap('urban3d')}
           >
-            3D Urban
+            3D Urban (OSM Buildings)
           </button>
         </div>
       </div>
