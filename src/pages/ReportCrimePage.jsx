@@ -11,8 +11,7 @@ import { Point } from 'ol/geom';
 import { Feature } from 'ol';
 import { Style, Circle, Fill, Stroke } from 'ol/style';
 import Overlay from 'ol/Overlay';
-import { ResizableBox } from 'react-resizable';
-import 'react-resizable/css/styles.css';
+import { Resizable } from 're-resizable';
 
 const ReportCrimePage = () => {
   const mapRef = useRef();
@@ -24,7 +23,7 @@ const ReportCrimePage = () => {
   const [crimeDate, setCrimeDate] = useState('');
   const [crimeObservation, setCrimeObservation] = useState('');
   const [clickedCoord, setClickedCoord] = useState(null);
-  const [popupSize, setPopupSize] = useState({ width: 300, height: 400 });
+  const [popupPosition, setPopupPosition] = useState({ left: 0, top: 0 });
 
   useEffect(() => {
     const initialMap = new Map({
@@ -54,17 +53,11 @@ const ReportCrimePage = () => {
 
     initialMap.addLayer(vectorLayer);
 
-    const popup = new Overlay({
-      element: popupRef.current,
-      positioning: 'center-center',
-      stopEvent: false,
-    });
-    initialMap.addOverlay(popup);
-
     initialMap.on('click', (event) => {
       const clickedCoord = transform(event.coordinate, 'EPSG:3857', 'EPSG:4326');
       setClickedCoord(clickedCoord);
-      popup.setPosition(event.coordinate);
+      const pixel = initialMap.getEventPixel(event.originalEvent);
+      setPopupPosition({ left: pixel[0], top: pixel[1] });
       popupRef.current.style.display = 'block';
     });
 
@@ -99,10 +92,6 @@ const ReportCrimePage = () => {
     e.stopPropagation();
   };
 
-  const handleResize = (event, { size }) => {
-    setPopupSize({ width: size.width, height: size.height });
-  };
-
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-gray-100 p-4">
@@ -112,16 +101,24 @@ const ReportCrimePage = () => {
         <div 
           ref={popupRef} 
           className="absolute bg-white rounded shadow-md" 
-          style={{ display: 'none', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}
+          style={{ 
+            display: 'none', 
+            left: `${popupPosition.left}px`, 
+            top: `${popupPosition.top}px`, 
+            transform: 'translate(-50%, -100%)', 
+            zIndex: 1000 
+          }}
           onClick={handlePopupClick}
         >
-          <ResizableBox
-            width={popupSize.width}
-            height={popupSize.height}
-            minConstraints={[200, 300]}
-            maxConstraints={[500, 600]}
-            onResize={handleResize}
-            resizeHandles={['se']}
+          <Resizable
+            defaultSize={{
+              width: 300,
+              height: 400,
+            }}
+            minWidth={200}
+            minHeight={300}
+            maxWidth={500}
+            maxHeight={600}
           >
             <div className="p-4 overflow-auto h-full">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -178,7 +175,7 @@ const ReportCrimePage = () => {
                 </div>
               </form>
             </div>
-          </ResizableBox>
+          </Resizable>
         </div>
       </div>
     </div>
