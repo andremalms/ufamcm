@@ -6,6 +6,7 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import XYZ from 'ol/source/XYZ';
 import { fromLonLat } from 'ol/proj';
+import ScaleLine from 'ol/control/ScaleLine';
 
 const MapPage = () => {
   const mapRef = useRef();
@@ -38,6 +39,7 @@ const MapPage = () => {
         center: fromLonLat([-59.9763193, -3.0989414]),
         zoom: 14,
       }),
+      controls: [new ScaleLine()],
     });
 
     setMap(initialMap);
