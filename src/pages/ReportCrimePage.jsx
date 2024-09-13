@@ -53,9 +53,8 @@ const ReportCrimePage = () => {
 
     const popup = new Overlay({
       element: popupRef.current,
-      positioning: 'bottom-center',
+      positioning: 'center-center',
       stopEvent: false,
-      offset: [0, -10],
     });
     initialMap.addOverlay(popup);
 
@@ -93,13 +92,22 @@ const ReportCrimePage = () => {
     }
   };
 
+  const handlePopupClick = (e) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-gray-100 p-4">
         <h1 className="text-2xl font-bold mb-4">Informar Ocorrências</h1>
       </div>
       <div ref={mapRef} className="flex-grow relative">
-        <div ref={popupRef} className="absolute bg-white p-4 rounded shadow-md max-w-sm" style={{ display: 'none', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+        <div 
+          ref={popupRef} 
+          className="absolute bg-white p-4 rounded shadow-md" 
+          style={{ display: 'none', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}
+          onClick={handlePopupClick}
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="crimeType" className="block text-sm font-medium text-gray-700">Tipo de Crime</label>
