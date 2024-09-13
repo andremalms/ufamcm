@@ -25,6 +25,15 @@ const ReportCrimePage = () => {
   const [clickedCoord, setClickedCoord] = useState(null);
   const [popupPosition, setPopupPosition] = useState({ left: 0, top: 0 });
 
+  const crimeTypes = [
+    "Assalto",
+    "Violência",
+    "Furto",
+    "Estupro",
+    "Abuso Psicológico",
+    "Abuso Sexual"
+  ];
+
   useEffect(() => {
     const initialMap = new Map({
       target: mapRef.current,
@@ -124,14 +133,18 @@ const ReportCrimePage = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="crimeType" className="block text-sm font-medium text-gray-700">Tipo de Crime</label>
-                  <input
-                    type="text"
+                  <select
                     id="crimeType"
                     value={crimeType}
                     onChange={(e) => setCrimeType(e.target.value)}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                     required
-                  />
+                  >
+                    <option value="">Selecione o tipo de crime</option>
+                    {crimeTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="crimeTime" className="block text-sm font-medium text-gray-700">Hora da Ocorrência</label>
