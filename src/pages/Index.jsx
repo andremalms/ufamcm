@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapIcon, AlertTriangle, Map, Leaf } from 'lucide-react';
+import { MapPin, AlertTriangle, Map, Leaf } from 'lucide-react';
 
 const Index = () => {
   const options = [
-    { title: 'Navegar no Mapa', icon: <MapIcon className="h-12 w-12 mb-4" />, path: '/map' },
+    { title: 'Navegar no Mapa', icon: <MapPin className="h-12 w-12 mb-4" />, path: '/map' },
     { title: 'Informar Ocorrências', icon: <AlertTriangle className="h-12 w-12 mb-4" />, path: '/report-crime' },
     { title: 'Mapas de Rua', icon: <Map className="h-12 w-12 mb-4" />, path: '/street-view' },
     { title: 'Árvores AHPICE', icon: <Leaf className="h-12 w-12 mb-4" />, path: '/trees' },
