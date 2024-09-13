@@ -11,6 +11,8 @@ import { Point } from 'ol/geom';
 import { Feature } from 'ol';
 import { Style, Circle, Fill, Stroke } from 'ol/style';
 import Overlay from 'ol/Overlay';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 const ReportCrimePage = () => {
   const mapRef = useRef();
@@ -22,6 +24,7 @@ const ReportCrimePage = () => {
   const [crimeDate, setCrimeDate] = useState('');
   const [crimeObservation, setCrimeObservation] = useState('');
   const [clickedCoord, setClickedCoord] = useState(null);
+  const [popupSize, setPopupSize] = useState({ width: 300, height: 400 });
 
   useEffect(() => {
     const initialMap = new Map({
@@ -96,6 +99,10 @@ const ReportCrimePage = () => {
     e.stopPropagation();
   };
 
+  const handleResize = (event, { size }) => {
+    setPopupSize({ width: size.width, height: size.height });
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-gray-100 p-4">
@@ -104,63 +111,74 @@ const ReportCrimePage = () => {
       <div ref={mapRef} className="flex-grow relative">
         <div 
           ref={popupRef} 
-          className="absolute bg-white p-4 rounded shadow-md" 
+          className="absolute bg-white rounded shadow-md" 
           style={{ display: 'none', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}
           onClick={handlePopupClick}
         >
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="crimeType" className="block text-sm font-medium text-gray-700">Tipo de Crime</label>
-              <input
-                type="text"
-                id="crimeType"
-                value={crimeType}
-                onChange={(e) => setCrimeType(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                required
-              />
+          <ResizableBox
+            width={popupSize.width}
+            height={popupSize.height}
+            minConstraints={[200, 300]}
+            maxConstraints={[500, 600]}
+            onResize={handleResize}
+            resizeHandles={['se']}
+          >
+            <div className="p-4 overflow-auto h-full">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="crimeType" className="block text-sm font-medium text-gray-700">Tipo de Crime</label>
+                  <input
+                    type="text"
+                    id="crimeType"
+                    value={crimeType}
+                    onChange={(e) => setCrimeType(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="crimeTime" className="block text-sm font-medium text-gray-700">Hora da Ocorrência</label>
+                  <input
+                    type="time"
+                    id="crimeTime"
+                    value={crimeTime}
+                    onChange={(e) => setCrimeTime(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="crimeDate" className="block text-sm font-medium text-gray-700">Data da Ocorrência</label>
+                  <input
+                    type="date"
+                    id="crimeDate"
+                    value={crimeDate}
+                    onChange={(e) => setCrimeDate(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="crimeObservation" className="block text-sm font-medium text-gray-700">Observação</label>
+                  <textarea
+                    id="crimeObservation"
+                    value={crimeObservation}
+                    onChange={(e) => setCrimeObservation(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div className="flex justify-between">
+                  <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                    Submeter
+                  </button>
+                  <button type="button" onClick={() => popupRef.current.style.display = 'none'} className="bg-gray-300 text-gray-700 p-2 rounded hover:bg-gray-400">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
             </div>
-            <div>
-              <label htmlFor="crimeTime" className="block text-sm font-medium text-gray-700">Hora da Ocorrência</label>
-              <input
-                type="time"
-                id="crimeTime"
-                value={crimeTime}
-                onChange={(e) => setCrimeTime(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="crimeDate" className="block text-sm font-medium text-gray-700">Data da Ocorrência</label>
-              <input
-                type="date"
-                id="crimeDate"
-                value={crimeDate}
-                onChange={(e) => setCrimeDate(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="crimeObservation" className="block text-sm font-medium text-gray-700">Observação</label>
-              <textarea
-                id="crimeObservation"
-                value={crimeObservation}
-                onChange={(e) => setCrimeObservation(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                rows="3"
-              ></textarea>
-            </div>
-            <div className="flex justify-between">
-              <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                Submeter
-              </button>
-              <button type="button" onClick={() => popupRef.current.style.display = 'none'} className="bg-gray-300 text-gray-700 p-2 rounded hover:bg-gray-400">
-                Cancelar
-              </button>
-            </div>
-          </form>
+          </ResizableBox>
         </div>
       </div>
     </div>
