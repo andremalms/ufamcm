@@ -21,10 +21,11 @@ const MapPage = () => {
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       }),
     }),
-    terrain: new TileLayer({
+    urban3d: new TileLayer({
       source: new XYZ({
-        url: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
-        attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
+        url: 'https://tile.osmbuildings.org/0.2/sx-cj9q7q/{z}/{x}/{y}.png',
+        attributions: '© OSM Buildings',
+        maxZoom: 19,
       }),
     }),
   };
@@ -69,10 +70,10 @@ const MapPage = () => {
             Satellite
           </button>
           <button
-            className={`px-4 py-2 rounded ${currentBasemap === 'terrain' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => changeBasemap('terrain')}
+            className={`px-4 py-2 rounded ${currentBasemap === 'urban3d' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => changeBasemap('urban3d')}
           >
-            Terrain
+            3D Urban
           </button>
         </div>
       </div>
