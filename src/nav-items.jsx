@@ -1,4 +1,4 @@
-import { HomeIcon, MapIcon, AlertTriangle, StreetView, Tree } from "lucide-react";
+import { HomeIcon, MapIcon, AlertTriangle, Map, Tree } from "lucide-react";
 import Index from "./pages/Index.jsx";
 import MapPage from "./pages/MapPage.jsx";
 import ReportCrimePage from "./pages/ReportCrimePage.jsx";
@@ -27,7 +27,7 @@ export const navItems = [
   {
     title: "Mapas de Rua",
     to: "/street-view",
-    icon: <StreetView className="h-4 w-4" />,
+    icon: <Map className="h-4 w-4" />,
     page: <StreetViewPage />,
   },
   {
