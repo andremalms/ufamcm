@@ -38,9 +38,38 @@ const StreetViewPage = () => {
       setViewer(mly);
       setMap(mbx);
 
-      const handleNodeChange = (event) => {
+      const handleNodeChange = async (event) => {
         const { lat, lon } = event.nodeCamera;
         mbx.setCenter([lon, lat]);
+
+        // Fetch and display sequence points
+        try {
+          const response = await fetch(`https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,sequence&sequence_id=${event.image.sequenceId}`);
+          const data = await response.json();
+
+          // Remove existing markers
+          document.querySelectorAll('.mapboxgl-marker').forEach(marker => marker.remove());
+
+          // Add new markers for each image in the sequence
+          data.data.forEach(image => {
+            const el = document.createElement('div');
+            el.className = 'marker';
+            el.style.backgroundColor = 'blue';
+            el.style.width = '10px';
+            el.style.height = '10px';
+            el.style.borderRadius = '50%';
+
+            new mapboxgl.Marker(el)
+              .setLngLat([image.geometry.coordinates[0], image.geometry.coordinates[1]])
+              .addTo(mbx);
+
+            el.addEventListener('click', () => {
+              mly.moveTo(image.id).then(() => console.log('Moved to image'));
+            });
+          });
+        } catch (error) {
+          console.error('Error fetching sequence data:', error);
+        }
       };
 
       mly.on('nodechanged', handleNodeChange);
