@@ -46,32 +46,45 @@ const StreetViewPage = () => {
       setMap(mbx);
 
       const handleNodeChange = async (event) => {
-        const { lat, lon } = event.nodeCamera;
-        mbx.setCenter([lon, lat]);
-        setCurrentImageId(event.image.id);
-
-        console.log('Current Mapillary Image Coordinates:', { lat, lon });
-
         try {
+          const { lat, lon } = event.nodeCamera;
+          mbx.setCenter([lon, lat]);
+          setCurrentImageId(event.image.id);
+
+          console.log('Current Mapillary Image Coordinates:', { lat, lon });
+
           const response = await fetch(`https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,sequence&sequence_id=${event.image.sequenceId}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           const data = await response.json();
 
           console.log('API Response:', data);
 
+          if (!data.data || !Array.isArray(data.data)) {
+            throw new Error('Invalid API response format');
+          }
+
           // Process the data into GeoJSON
           const geoJsonData = {
             type: 'FeatureCollection',
-            features: data.data.map(image => ({
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: image.geometry.coordinates
-              },
-              properties: {
-                id: image.id,
-                isCurrentImage: image.id === event.image.id
+            features: data.data.map(image => {
+              if (!image.geometry || !image.geometry.coordinates) {
+                console.warn('Invalid image data:', image);
+                return null;
               }
-            }))
+              return {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: image.geometry.coordinates
+                },
+                properties: {
+                  id: image.id,
+                  isCurrentImage: image.id === event.image.id
+                }
+              };
+            }).filter(feature => feature !== null)
           };
 
           console.log('Processed GeoJSON:', geoJsonData);
@@ -105,6 +118,9 @@ const StreetViewPage = () => {
               mly.moveTo(clickedImageId).then(() => {
                 console.log('Moved to image:', clickedImageId);
                 setCurrentImageId(clickedImageId);
+              }).catch(err => {
+                console.error('Error moving to image:', err);
+                setError('Failed to move to the selected image. Please try again.');
               });
             }
           });
@@ -117,9 +133,9 @@ const StreetViewPage = () => {
             mbx.getCanvas().style.cursor = '';
           });
 
-        } catch (error) {
-          console.error('Error fetching sequence data:', error);
-          setError('Failed to fetch sequence data. Please try again later.');
+        } catch (err) {
+          console.error('Error processing data or adding layer:', err);
+          setError('An error occurred while updating the map. Please try again later.');
         }
       };
 
