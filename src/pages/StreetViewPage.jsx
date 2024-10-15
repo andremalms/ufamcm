@@ -15,6 +15,7 @@ const StreetViewPage = () => {
   const [viewer, setViewer] = useState(null);
   const [map, setMap] = useState(null);
   const [error, setError] = useState(null);
+  const [currentImageId, setCurrentImageId] = useState(null);
 
   useEffect(() => {
     if (!mapillaryContainerRef.current || !mapboxContainerRef.current) return;
@@ -41,6 +42,7 @@ const StreetViewPage = () => {
       const handleNodeChange = async (event) => {
         const { lat, lon } = event.nodeCamera;
         mbx.setCenter([lon, lat]);
+        setCurrentImageId(event.image.id);
 
         // Fetch and display sequence points
         try {
@@ -54,21 +56,25 @@ const StreetViewPage = () => {
           data.data.forEach(image => {
             const el = document.createElement('div');
             el.className = 'marker';
-            el.style.backgroundColor = 'green'; // Changed from blue to green
             el.style.width = '10px';
             el.style.height = '10px';
             el.style.borderRadius = '50%';
+            el.style.backgroundColor = image.id === event.image.id ? 'red' : 'blue';
 
-            new mapboxgl.Marker(el)
+            const marker = new mapboxgl.Marker(el)
               .setLngLat([image.geometry.coordinates[0], image.geometry.coordinates[1]])
               .addTo(mbx);
 
             el.addEventListener('click', () => {
-              mly.moveTo(image.id).then(() => console.log('Moved to image'));
+              mly.moveTo(image.id).then(() => {
+                console.log('Moved to image');
+                setCurrentImageId(image.id);
+              });
             });
           });
         } catch (error) {
           console.error('Error fetching sequence data:', error);
+          setError('Failed to fetch sequence data. Please try again later.');
         }
       };
 
