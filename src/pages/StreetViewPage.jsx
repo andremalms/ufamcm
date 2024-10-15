@@ -50,31 +50,9 @@ const StreetViewPage = () => {
         mbx.setCenter([lon, lat]);
         setCurrentImageId(event.image.id);
 
-        console.log('Current Mapillary Image Coordinates:', { lat, lon });
-
         try {
           const response = await fetch(`https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,sequence&sequence_id=${event.image.sequenceId}`);
           const data = await response.json();
-
-          console.log('API Response:', data);
-
-          // Process the data into GeoJSON
-          const geoJsonData = {
-            type: 'FeatureCollection',
-            features: data.data.map(image => ({
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: image.geometry.coordinates
-              },
-              properties: {
-                id: image.id,
-                isCurrentImage: image.id === event.image.id
-              }
-            }))
-          };
-
-          console.log('Processed GeoJSON:', geoJsonData);
 
           // Remove existing layers and sources
           if (mbx.getLayer('sequence-points')) mbx.removeLayer('sequence-points');
@@ -83,7 +61,20 @@ const StreetViewPage = () => {
           // Add new source and layer for sequence points
           mbx.addSource('sequence-points', {
             type: 'geojson',
-            data: geoJsonData
+            data: {
+              type: 'FeatureCollection',
+              features: data.data.map(image => ({
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: image.geometry.coordinates
+                },
+                properties: {
+                  id: image.id,
+                  isCurrentImage: image.id === event.image.id
+                }
+              }))
+            }
           });
 
           mbx.addLayer({
@@ -103,7 +94,7 @@ const StreetViewPage = () => {
             if (e.features.length > 0) {
               const clickedImageId = e.features[0].properties.id;
               mly.moveTo(clickedImageId).then(() => {
-                console.log('Moved to image:', clickedImageId);
+                console.log('Moved to image');
                 setCurrentImageId(clickedImageId);
               });
             }
