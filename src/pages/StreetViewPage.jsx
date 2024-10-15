@@ -1,14 +1,127 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Viewer } from 'mapillary-js';
+import mapboxgl from 'mapbox-gl';
+import 'mapillary-js/dist/mapillary.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import syncMove from '@mapbox/mapbox-gl-sync-move';
+
+// Replace with your actual Mapillary and Mapbox access tokens
+const MAPILLARY_ACCESS_TOKEN = 'YOUR_MAPILLARY_ACCESS_TOKEN';
+const MAPBOX_ACCESS_TOKEN = 'YOUR_MAPBOX_ACCESS_TOKEN';
+
+mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
 const StreetViewPage = () => {
+  const mapillaryContainerRef = useRef(null);
+  const mapboxContainerRef = useRef(null);
+  const [viewer, setViewer] = useState(null);
+  const [map, setMap] = useState(null);
+  const [currentImageId, setCurrentImageId] = useState('840083121440177');
+
+  useEffect(() => {
+    if (!mapillaryContainerRef.current || !mapboxContainerRef.current) return;
+
+    const mly = new Viewer({
+      accessToken: MAPILLARY_ACCESS_TOKEN,
+      container: mapillaryContainerRef.current,
+      imageId: currentImageId,
+    });
+
+    const mbx = new mapboxgl.Map({
+      container: mapboxContainerRef.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [0, 0],
+      zoom: 17,
+      pitch: 45,
+      bearing: 0,
+    });
+
+    syncMove(mbx, mly);
+
+    setViewer(mly);
+    setMap(mbx);
+
+    return () => {
+      mly.remove();
+      mbx.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!viewer || !map) return;
+
+    const handleNodeChange = (event) => {
+      const { lat, lon, ca } = event.nodeCamera;
+      map.setCenter([lon, lat]);
+      map.setBearing(ca);
+      setCurrentImageId(event.image.id);
+    };
+
+    viewer.on('nodechanged', handleNodeChange);
+
+    return () => {
+      viewer.off('nodechanged', handleNodeChange);
+    };
+  }, [viewer, map]);
+
+  useEffect(() => {
+    if (!map || !viewer) return;
+
+    const updateMapMarkers = async () => {
+      const { lat, lon } = await viewer.getPosition();
+      const sequences = await viewer.getComponent('sequence').getSequences();
+
+      map.getSource('points')?.remove();
+      map.removeLayer('points');
+
+      map.addSource('points', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: sequences.flatMap(seq => seq.nodes.map(node => ({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [node.computedLatLon.lon, node.computedLatLon.lat],
+            },
+            properties: {
+              id: node.id,
+              isActive: node.id === currentImageId,
+            },
+          }))),
+        },
+      });
+
+      map.addLayer({
+        id: 'points',
+        type: 'circle',
+        source: 'points',
+        paint: {
+          'circle-radius': 6,
+          'circle-color': ['case', ['==', ['get', 'isActive'], true], 'red', 'blue'],
+        },
+      });
+
+      map.on('click', 'points', (e) => {
+        if (e.features.length > 0) {
+          const clickedPointId = e.features[0].properties.id;
+          viewer.moveTo(clickedPointId);
+        }
+      });
+    };
+
+    updateMapMarkers();
+    viewer.on('nodechanged', updateMapMarkers);
+
+    return () => {
+      viewer.off('nodechanged', updateMapMarkers);
+    };
+  }, [map, viewer, currentImageId]);
+
   return (
-    <div className="h-screen w-full">
-      <iframe
-        src="http://18.116.82.248/cmufam/#/p/840083121440177"
-        title="Mapas de Rua UFAM"
-        className="w-full h-full border-none"
-        allowFullScreen
-      />
+    <div className="flex h-screen">
+      <div ref={mapillaryContainerRef} className="w-1/2 h-full" />
+      <div ref={mapboxContainerRef} className="w-1/2 h-full" />
     </div>
   );
 };
