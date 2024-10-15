@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import mapboxgl from 'mapbox-gl';
+import { fromLonLat } from 'ol/proj';
 import MapillaryViewer from '../components/MapillaryViewer';
 import MapboxMap from '../components/MapboxMap';
 
@@ -109,6 +109,7 @@ const StreetViewPage = () => {
       map.getCanvas().style.cursor = '';
     });
 
+    // Fit the map to the bounds of the sequence
     const coordinates = geoJsonData.features.map(f => f.geometry.coordinates);
     const bounds = coordinates.reduce((bounds, coord) => {
       return bounds.extend(coord);
@@ -172,6 +173,7 @@ const StreetViewPage = () => {
         }
       });
 
+      // Fit the map to the bounds of the sequence
       const coordinates = geoJsonData.features.map(f => f.geometry.coordinates);
       const bounds = coordinates.reduce((bounds, coord) => {
         return bounds.extend(coord);
