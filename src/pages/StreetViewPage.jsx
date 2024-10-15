@@ -4,9 +4,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapillary-js/dist/mapillary.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Replace these with your actual tokens or use environment variables
-const MAPILLARY_ACCESS_TOKEN = 'YOUR_MAPILLARY_ACCESS_TOKEN';
-const MAPBOX_ACCESS_TOKEN = 'YOUR_MAPBOX_ACCESS_TOKEN';
+const MAPILLARY_ACCESS_TOKEN = 'MLY|9269492676456633|a6293e72d833fa0f80c33e4fb48d14f5';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiYW5kcmVtZW5kb25jYSIsImEiOiJjbGxrMmRidjYyaGk4M21tZ2hhanFjMjVwIn0.4_fHgnbXRc1Hxg--Bs_kkg';
 
 mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
