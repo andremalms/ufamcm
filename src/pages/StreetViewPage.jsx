@@ -54,7 +54,7 @@ const StreetViewPage = () => {
           data.data.forEach(image => {
             const el = document.createElement('div');
             el.className = 'marker';
-            el.style.backgroundColor = 'blue';
+            el.style.backgroundColor = 'green'; // Changed from blue to green
             el.style.width = '10px';
             el.style.height = '10px';
             el.style.borderRadius = '50%';
