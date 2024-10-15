@@ -127,7 +127,7 @@ const StreetViewPage = () => {
   }, [map, viewer, currentImageId]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !viewer) return;
 
     const handleMapClick = (e) => {
       const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
