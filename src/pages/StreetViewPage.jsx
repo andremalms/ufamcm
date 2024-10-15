@@ -119,11 +119,17 @@ const StreetViewPage = () => {
       }
     };
 
-    updateMapMarkers();
-    viewer.on('nodechanged', updateMapMarkers);
+    const safeUpdateMapMarkers = () => {
+      updateMapMarkers().catch(error => {
+        console.error('Failed to update map markers:', error);
+      });
+    };
+
+    safeUpdateMapMarkers();
+    viewer.on('nodechanged', safeUpdateMapMarkers);
 
     return () => {
-      viewer.off('nodechanged', updateMapMarkers);
+      viewer.off('nodechanged', safeUpdateMapMarkers);
     };
   }, [map, viewer, currentImageId]);
 
