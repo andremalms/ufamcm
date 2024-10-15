@@ -107,13 +107,6 @@ const StreetViewPage = () => {
             'circle-color': ['case', ['==', ['get', 'isActive'], true], 'red', 'blue'],
           },
         });
-
-        map.on('click', 'points', (e) => {
-          if (e.features.length > 0) {
-            const clickedPointId = e.features[0].properties.id;
-            viewer.moveTo(clickedPointId).catch(console.error);
-          }
-        });
       } catch (error) {
         console.error('Error updating map markers:', error);
       }
@@ -132,6 +125,26 @@ const StreetViewPage = () => {
       viewer.off('nodechanged', safeUpdateMapMarkers);
     };
   }, [map, viewer, currentImageId]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const handleMapClick = (e) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
+      if (features.length > 0) {
+        const clickedPointId = features[0].properties.id;
+        viewer.moveTo(clickedPointId).catch(error => {
+          console.error('Error moving to clicked point:', error);
+        });
+      }
+    };
+
+    map.on('click', handleMapClick);
+
+    return () => {
+      map.off('click', handleMapClick);
+    };
+  }, [map, viewer]);
 
   return (
     <div className="flex h-screen">
