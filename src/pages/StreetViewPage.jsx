@@ -68,46 +68,55 @@ const StreetViewPage = () => {
     if (!map || !viewer) return;
 
     const updateMapMarkers = async () => {
-      const { lat, lon } = await viewer.getPosition();
-      const sequences = await viewer.getComponent('sequence').getSequences();
+      try {
+        const position = await viewer.getPosition();
+        const sequenceComponent = viewer.getComponent('sequence');
+        const sequences = await sequenceComponent.getSequences();
 
-      map.getSource('points')?.remove();
-      map.removeLayer('points');
-
-      map.addSource('points', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: sequences.flatMap(seq => seq.nodes.map(node => ({
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [node.computedLatLon.lon, node.computedLatLon.lat],
-            },
-            properties: {
-              id: node.id,
-              isActive: node.id === currentImageId,
-            },
-          }))),
-        },
-      });
-
-      map.addLayer({
-        id: 'points',
-        type: 'circle',
-        source: 'points',
-        paint: {
-          'circle-radius': 6,
-          'circle-color': ['case', ['==', ['get', 'isActive'], true], 'red', 'blue'],
-        },
-      });
-
-      map.on('click', 'points', (e) => {
-        if (e.features.length > 0) {
-          const clickedPointId = e.features[0].properties.id;
-          viewer.moveTo(clickedPointId);
+        if (map.getSource('points')) {
+          map.removeLayer('points');
+          map.removeSource('points');
         }
-      });
+
+        const features = sequences.flatMap(seq => seq.nodes.map(node => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [node.computedLatLon.lon, node.computedLatLon.lat],
+          },
+          properties: {
+            id: node.id,
+            isActive: node.id === currentImageId,
+          },
+        })));
+
+        map.addSource('points', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: features,
+          },
+        });
+
+        map.addLayer({
+          id: 'points',
+          type: 'circle',
+          source: 'points',
+          paint: {
+            'circle-radius': 6,
+            'circle-color': ['case', ['==', ['get', 'isActive'], true], 'red', 'blue'],
+          },
+        });
+
+        map.on('click', 'points', (e) => {
+          if (e.features.length > 0) {
+            const clickedPointId = e.features[0].properties.id;
+            viewer.moveTo(clickedPointId).catch(console.error);
+          }
+        });
+      } catch (error) {
+        console.error('Error updating map markers:', error);
+      }
     };
 
     updateMapMarkers();
