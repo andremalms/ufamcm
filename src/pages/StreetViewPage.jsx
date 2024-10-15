@@ -27,6 +27,12 @@ const StreetViewPage = () => {
         accessToken: MAPILLARY_ACCESS_TOKEN,
         container: mapillaryContainerRef.current,
         imageId: '840083121440177',
+        component: {
+          cover: false,
+          direction: false,
+          sequence: false,
+          zoom: false
+        }
       });
 
       mbx = new mapboxgl.Map({
@@ -56,13 +62,15 @@ const StreetViewPage = () => {
           data.data.forEach(image => {
             const el = document.createElement('div');
             el.className = 'marker';
-            el.style.width = '10px';
-            el.style.height = '10px';
+            el.style.width = '15px';
+            el.style.height = '15px';
             el.style.borderRadius = '50%';
             el.style.backgroundColor = image.id === event.image.id ? 'red' : 'blue';
+            el.style.border = '2px solid white';
+            el.style.cursor = 'pointer';
 
             const marker = new mapboxgl.Marker(el)
-              .setLngLat([image.geometry.coordinates[0], image.geometry.coordinates[1]])
+              .setLngLat(image.geometry.coordinates)
               .addTo(mbx);
 
             el.addEventListener('click', () => {
