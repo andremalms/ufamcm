@@ -50,36 +50,64 @@ const StreetViewPage = () => {
         mbx.setCenter([lon, lat]);
         setCurrentImageId(event.image.id);
 
-        // Fetch and display sequence points
         try {
           const response = await fetch(`https://graph.mapillary.com/images?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=id,geometry,sequence&sequence_id=${event.image.sequenceId}`);
           const data = await response.json();
 
-          // Remove existing markers
-          document.querySelectorAll('.mapboxgl-marker').forEach(marker => marker.remove());
+          // Remove existing layers and sources
+          if (mbx.getLayer('sequence-points')) mbx.removeLayer('sequence-points');
+          if (mbx.getSource('sequence-points')) mbx.removeSource('sequence-points');
 
-          // Add new markers for each image in the sequence
-          data.data.forEach(image => {
-            const el = document.createElement('div');
-            el.className = 'marker';
-            el.style.width = '15px';
-            el.style.height = '15px';
-            el.style.borderRadius = '50%';
-            el.style.backgroundColor = image.id === event.image.id ? 'red' : 'blue';
-            el.style.border = '2px solid white';
-            el.style.cursor = 'pointer';
-
-            const marker = new mapboxgl.Marker(el)
-              .setLngLat(image.geometry.coordinates)
-              .addTo(mbx);
-
-            el.addEventListener('click', () => {
-              mly.moveTo(image.id).then(() => {
-                console.log('Moved to image');
-                setCurrentImageId(image.id);
-              });
-            });
+          // Add new source and layer for sequence points
+          mbx.addSource('sequence-points', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: data.data.map(image => ({
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: image.geometry.coordinates
+                },
+                properties: {
+                  id: image.id,
+                  isCurrentImage: image.id === event.image.id
+                }
+              }))
+            }
           });
+
+          mbx.addLayer({
+            id: 'sequence-points',
+            type: 'circle',
+            source: 'sequence-points',
+            paint: {
+              'circle-radius': 6,
+              'circle-color': ['case', ['==', ['get', 'isCurrentImage'], true], 'red', 'blue'],
+              'circle-stroke-width': 2,
+              'circle-stroke-color': 'white'
+            }
+          });
+
+          // Add click event to the points
+          mbx.on('click', 'sequence-points', (e) => {
+            if (e.features.length > 0) {
+              const clickedImageId = e.features[0].properties.id;
+              mly.moveTo(clickedImageId).then(() => {
+                console.log('Moved to image');
+                setCurrentImageId(clickedImageId);
+              });
+            }
+          });
+
+          // Change cursor on hover
+          mbx.on('mouseenter', 'sequence-points', () => {
+            mbx.getCanvas().style.cursor = 'pointer';
+          });
+          mbx.on('mouseleave', 'sequence-points', () => {
+            mbx.getCanvas().style.cursor = '';
+          });
+
         } catch (error) {
           console.error('Error fetching sequence data:', error);
           setError('Failed to fetch sequence data. Please try again later.');
