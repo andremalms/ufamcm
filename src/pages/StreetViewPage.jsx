@@ -15,7 +15,7 @@ const StreetViewPage = () => {
   const [viewer, setViewer] = useState(null);
   const [map, setMap] = useState(null);
   const [error, setError] = useState(null);
-  const [currentImageId, setCurrentImageId] = useState(null);
+  const [currentImageId, setCurrentImageId] = useState('840083121440177'); // Initial image ID
 
   useEffect(() => {
     if (!mapillaryContainerRef.current || !mapboxContainerRef.current) return;
@@ -26,7 +26,7 @@ const StreetViewPage = () => {
       mly = new Viewer({
         accessToken: MAPILLARY_ACCESS_TOKEN,
         container: mapillaryContainerRef.current,
-        imageId: '840083121440177',
+        imageId: currentImageId,
         component: {
           cover: false,
           direction: false,
@@ -42,8 +42,58 @@ const StreetViewPage = () => {
         zoom: 17,
       });
 
+      // Add scale bar
+      const scale = new mapboxgl.ScaleControl({
+        maxWidth: 80,
+        unit: 'metric'
+      });
+      mbx.addControl(scale);
+
       setViewer(mly);
       setMap(mbx);
+
+      // Add initial vector point
+      mbx.on('load', () => {
+        fetch(`https://graph.mapillary.com/${currentImageId}?access_token=${MAPILLARY_ACCESS_TOKEN}&fields=geometry`)
+          .then(response => response.json())
+          .then(data => {
+            const [lon, lat] = data.geometry.coordinates;
+            mbx.addSource('initial-point', {
+              type: 'geojson',
+              data: {
+                type: 'FeatureCollection',
+                features: [{
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [lon, lat]
+                  }
+                }]
+              }
+            });
+
+            mbx.addLayer({
+              id: 'initial-point',
+              type: 'circle',
+              source: 'initial-point',
+              paint: {
+                'circle-radius': 6,
+                'circle-color': 'red',
+                'circle-stroke-width': 2,
+                'circle-stroke-color': 'white'
+              }
+            });
+
+            mbx.flyTo({
+              center: [lon, lat],
+              zoom: 17
+            });
+          })
+          .catch(err => {
+            console.error('Error fetching initial image data:', err);
+            setError('Failed to fetch initial image data. Please try again later.');
+          });
+      });
 
       const handleNodeChange = async (event) => {
         const { lat, lon } = event.nodeCamera;
@@ -125,7 +175,7 @@ const StreetViewPage = () => {
       console.error('Error initializing viewers:', err);
       setError('Failed to initialize street view. Please try again later.');
     }
-  }, []);
+  }, [currentImageId]);
 
   if (error) {
     return <div className="text-red-500 p-4">{error}</div>;
