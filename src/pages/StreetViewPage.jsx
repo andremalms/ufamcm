@@ -3,7 +3,7 @@ import { Viewer } from 'mapillary-js';
 import mapboxgl from 'mapbox-gl';
 import 'mapillary-js/dist/mapillary.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { ArrowLeft, ArrowRight } from 'lucide-react'; // Import arrow icons
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const MAPILLARY_ACCESS_TOKEN = 'MLY|9269492676456633|a6293e72d833fa0f80c33e4fb48d14f5';
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiYW5kcmVtZW5kb25jYSIsImEiOiJjbGxrMmRidjYyaGk4M21tZ2hhanFjMjVwIn0.4_fHgnbXRc1Hxg--Bs_kkg';
@@ -16,7 +16,7 @@ const StreetViewPage = () => {
   const [viewer, setViewer] = useState(null);
   const [map, setMap] = useState(null);
   const [error, setError] = useState(null);
-  const [currentImageId, setCurrentImageId] = useState('840083121440177'); // Initial image ID
+  const [currentImageId, setCurrentImageId] = useState('840083121440177');
 
   useEffect(() => {
     if (!mapillaryContainerRef.current || !mapboxContainerRef.current) return;
@@ -180,11 +180,11 @@ const StreetViewPage = () => {
 
   const navigateImage = (direction) => {
     if (viewer) {
-      const method = direction === 'next' ? 'moveToNextImage' : 'moveToPrevImage';
+      const method = direction === 'next' ? 'moveToNextKey' : 'moveToPreviousKey';
       viewer[method]()
         .catch(error => {
           console.error(`Failed to navigate ${direction}:`, error);
-          // You can set an error state here if you want to display it to the user
+          setError(`Failed to navigate ${direction}. Please try again.`);
         });
     }
   };
