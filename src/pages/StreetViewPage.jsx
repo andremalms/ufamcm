@@ -3,6 +3,7 @@ import { Viewer } from 'mapillary-js';
 import mapboxgl from 'mapbox-gl';
 import 'mapillary-js/dist/mapillary.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { ArrowLeft, ArrowRight } from 'lucide-react'; // Import arrow icons
 
 const MAPILLARY_ACCESS_TOKEN = 'MLY|9269492676456633|a6293e72d833fa0f80c33e4fb48d14f5';
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiYW5kcmVtZW5kb25jYSIsImEiOiJjbGxrMmRidjYyaGk4M21tZ2hhanFjMjVwIn0.4_fHgnbXRc1Hxg--Bs_kkg';
@@ -177,13 +178,38 @@ const StreetViewPage = () => {
     }
   }, [currentImageId]);
 
+  const navigateImage = (direction) => {
+    if (viewer) {
+      const method = direction === 'next' ? 'moveToNextImage' : 'moveToPrevImage';
+      viewer[method]()
+        .catch(error => {
+          console.error(`Failed to navigate ${direction}:`, error);
+          // You can set an error state here if you want to display it to the user
+        });
+    }
+  };
+
   if (error) {
     return <div className="text-red-500 p-4">{error}</div>;
   }
 
   return (
-    <div className="flex h-screen">
-      <div ref={mapillaryContainerRef} className="w-1/2 h-full" />
+    <div className="flex h-screen relative">
+      <div ref={mapillaryContainerRef} className="w-1/2 h-full relative">
+        {/* Navigation arrows */}
+        <button 
+          onClick={() => navigateImage('prev')} 
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
+        >
+          <ArrowLeft className="h-6 w-6 text-gray-800" />
+        </button>
+        <button 
+          onClick={() => navigateImage('next')} 
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
+        >
+          <ArrowRight className="h-6 w-6 text-gray-800" />
+        </button>
+      </div>
       <div ref={mapboxContainerRef} className="w-1/2 h-full" />
     </div>
   );
